@@ -1,10 +1,11 @@
 import { ArrowUpRight, ChevronLeft, Menu, X } from 'lucide-react'
-import { useState } from 'react'
-import { BrowserRouter, Link, NavLink, Route, Routes, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { BrowserRouter, Link, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { getPost, posts } from './content/posts'
 import { openSourceProjects } from './content/projects'
 import { ContactLinks, PostRow, ProjectCard, ScrollToTop, TableOfContents } from './Utils'
 import { getPostHeadings, renderPostMarkdown } from './markdown'
+import { getPageMetadata } from './metadata'
 import './App.css'
 
 
@@ -15,7 +16,7 @@ function Header() {
   const closeMenu = () => setMenuOpen(false)
   return <header className="site-header">
     <Link to="/" className="wordmark" onClick={closeMenu}>
-      <img className="wordmark-logo" src="logo.jpg" alt="LostAquilae logo" />
+      <img className="wordmark-logo" src={`${import.meta.env.BASE_URL}logo.jpg`} alt="LostAquilae logo" />
       <span>LostAquilae // Offensive Research</span>
     </Link>
     <button className="menu-toggle" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
@@ -192,7 +193,7 @@ function Post() {
   const { slug } = useParams()
   const post = getPost(slug)
 
-  if (!post) return <section className="section-wrap not-found"><h1>That note wandered off.</h1><Link className="text-link" to="/writing"><ChevronLeft size={16} /> Back to writing</Link></section>
+  if (!post) return <NotFound />
 
   const headings = getPostHeadings(post.content)
   const currentIndex = posts.findIndex((item) => item.slug === slug)
@@ -222,10 +223,26 @@ function Post() {
 
 
 // App Section
+function NotFound() {
+  return <section className="section-wrap not-found">
+    <span className="eyebrow">404 · Not found</span>
+    <h2>The page you’re looking for doesn’t exist or may have moved.</h2>
+    <Link className="text-link" to="/">Back to home <ArrowUpRight size={16} /></Link>
+  </section>
+}
+
 function Layout({ children }) { return <><Header /><main>{children}</main><Footer /></> }
 
-function App() {
-  return <BrowserRouter>
+export function AppRoutes() {
+  const { pathname } = useLocation()
+  const { title, description } = getPageMetadata(pathname)
+
+  useEffect(() => {
+    document.title = title
+    document.querySelector('meta[name="description"]')?.setAttribute('content', description)
+  }, [title, description])
+
+  return <>
     <ScrollToTop />
     <Layout>
       <Routes>
@@ -234,8 +251,15 @@ function App() {
         <Route path="/writing" element={<Writing />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/writing/:slug" element={<Post />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
+  </>
+}
+
+function App() {
+  return <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <AppRoutes />
   </BrowserRouter>
 }
 
