@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="LostAquilae's cybersecurity research, projects, and technical writing." />
     <title>LostAquilae's blog</title>
+    <!-- Small script that adds an ending '/' to the URL if it is missing -->
+    <script>
+      const baseUrl = '%BASE_URL%'
+      const basePath = baseUrl.slice(0, -1)
+      const pathname = window.location.pathname
+      const routePath = pathname.startsWith(baseUrl) ? pathname.slice(baseUrl.length) : ''
+      const isKnownRoute = ['about', 'writing', 'projects'].includes(routePath) || /^writing\/[^/]+$/.test(routePath)
+
+      if (pathname === basePath || isKnownRoute) {
+        window.location.replace(`${pathname}/${window.location.search}${window.location.hash}`)
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
