@@ -15,12 +15,13 @@ const vite = await createServer({
 })
 
 try {
-  const [{ AppRoutes }, { posts }, { getPageMetadata }] = await Promise.all([
+  const [{ AppRoutes }, { posts }, { getPageMetadata }, { renderPostMarkdown }] = await Promise.all([
     vite.ssrLoadModule('/src/App.jsx'),
     vite.ssrLoadModule('/src/content/posts.js'),
     vite.ssrLoadModule('/src/metadata.js'),
+    vite.ssrLoadModule('/src/markdown.js'),
   ])
-  const template = await readFile(path.join(outputDirectory, 'index.html'), 'utf8')
+  const siteUrl = `https://lostaquilae.github.io${vite.config.base.replace(/\/$/, '')}`
   const manifest = JSON.parse(await readFile(path.join(outputDirectory, '.vite/manifest.json'), 'utf8'))
   const imageUrls = Object.entries(manifest)
     .filter(([source]) => source.startsWith('src/content/posts/'))
@@ -28,6 +29,48 @@ try {
       `${vite.config.base}${source}`,
       `${vite.config.base}${asset.file}`,
     ])
+  const feedImageUrls = imageUrls.map(([sourceUrl, assetUrl]) => [
+    sourceUrl,
+    new URL(assetUrl.slice(vite.config.base.length), `${siteUrl}/`).href,
+  ])
+  const feedItems = posts.map((post) => {
+    const pubDate = new Date(`${post.date} 00:00:00 UTC`)
+    if (Number.isNaN(pubDate.getTime())) {
+      throw new Error(`Invalid publication date for post "${post.slug}": ${post.date}`)
+    }
+
+    const postUrl = `${siteUrl}/writing/${post.slug}/`
+    const articleHtml = feedImageUrls.reduce(
+      (content, [sourceUrl, builtUrl]) => content.replaceAll(sourceUrl, builtUrl),
+      renderPostMarkdown(post.content, post.slug),
+    )
+    const fullContent = `<h1>${escapeHtml(post.title)}</h1>
+<p>${escapeHtml(post.excerpt)}</p>
+${articleHtml}`
+    return `    <item>
+      <title>${escapeXml(post.title)}</title>
+      <link>${escapeXml(postUrl)}</link>
+      <guid isPermaLink="true">${escapeXml(postUrl)}</guid>
+      <description>${escapeXml(post.excerpt)}</description>
+      <pubDate>${pubDate.toUTCString()}</pubDate>
+${(post.tags ?? []).map((tag) => `      <category>${escapeXml(tag)}</category>`).join('\n')}
+      <content:encoded><![CDATA[${fullContent.replaceAll(']]>', ']]]]><![CDATA[>')}]]></content:encoded>
+    </item>`
+  }).join('\n')
+  const rssFeed = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>${escapeXml("LostAquilae's Blog")}</title>
+    <link>${escapeXml(`${siteUrl}/`)}</link>
+    <description>${escapeXml('Cybersecurity research, projects, and technical writing by LostAquilae.')}</description>
+    <language>en</language>
+${feedItems}
+  </channel>
+</rss>
+`
+  await writeFile(path.join(outputDirectory, 'rss.xml'), rssFeed)
+
+  const template = await readFile(path.join(outputDirectory, 'index.html'), 'utf8')
   const routes = ['/', '/about/', '/writing/', '/projects/', ...posts.map((post) => `/writing/${post.slug}/`)]
     .map((routePath) => ({ path: routePath, ...getPageMetadata(routePath) }))
   routes.push({ path: '/not-found', outputFile: '404.html', ...getPageMetadata('/not-found') })
@@ -63,5 +106,15 @@ function escapeHtml(value) {
     '"': '&quot;',
     '<': '&lt;',
     '>': '&gt;',
+  })[character])
+}
+
+function escapeXml(value) {
+  return value.replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&apos;',
   })[character])
 }
