@@ -282,7 +282,7 @@ em {
 
 .project-image {
     position: relative;
-    overflow: hidden;
+    margin: 0;
 }
 
 .project-image img {
@@ -294,6 +294,15 @@ em {
 
 .project-image:hover img {
     transform: scale(1.03);
+}
+
+.post-image-caption {
+    margin-top: 12px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
 }
 
 .image-label {
@@ -692,6 +701,10 @@ em {
     display: block;
     width: 100%;
     height: auto;
+    margin: 0 auto;
+}
+
+.article-image-figure {
     margin: 0 auto 48px;
 }
 

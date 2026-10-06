@@ -28,6 +28,14 @@ export function ContactLinks() {
     </div>
 }
 
+// Returns the image cover for a specific post
+export function PostImage({ post, className, imageClassName }) {
+  return <figure className={className}>
+    <img className={imageClassName} src={post.image} alt={post.imageAlt || ''} />
+    {post.imageCaption && <figcaption className="post-image-caption">{post.imageCaption}</figcaption>}
+  </figure>
+}
+
 // Display projects cards
 export function ProjectCard({ project }) {
     return <a className="open-source-card" href={project.repo} target="_blank" rel="noreferrer">

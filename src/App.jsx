@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { getPost, posts } from './content/posts'
 import { openSourceProjects } from './content/projects'
-import { ContactLinks, PostRow, ProjectCard, ScrollToTop, TableOfContents } from './Utils'
+import { ContactLinks, PostRow, ProjectCard, ScrollToTop, TableOfContents, PostImage } from './Utils'
 import { getPostHeadings, renderPostMarkdown } from './markdown'
 import { getPageMetadata } from './metadata'
 import './App.css'
@@ -65,9 +65,7 @@ function Home() {
         <span className="eyebrow">Latest Blog</span>
       </div>
       <div className={latestPost.image ? 'project-feature has-image' : 'project-feature no-image'}>
-        {latestPost.image && <div className="project-image">
-          <img src={latestPost.image} alt={latestPost.imageAlt} />
-        </div>}
+        {latestPost.image && <PostImage post={latestPost} className="project-image" />}
         <div className="project-copy">
           {latestPost.image ? <>
             <span className="project-type">{latestPost.category} · {latestPost.date}</span>
@@ -202,7 +200,7 @@ function Post() {
 
   return <article className="article section-wrap">
     <Link className="back-link" to="/writing/"><ChevronLeft size={16} /> All writing</Link>
-    <div className="article-header">{post.image && <img className="article-image" src={post.image} alt={post.imageAlt || ''} />}<span className="eyebrow">{post.category} · {post.date}</span><h1>{post.title}</h1><p>{post.excerpt}</p>{post.tags?.length > 0 && <div className="post-tags article-tags" aria-label="Post tags">{post.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}</div>
+    <div className="article-header">{post.image && <PostImage post={post} className="article-image-figure" imageClassName="article-image" />}<span className="eyebrow">{post.category} · {post.date}</span><h1>{post.title}</h1><p>{post.excerpt}</p>{post.tags?.length > 0 && <div className="post-tags article-tags" aria-label="Post tags">{post.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}</div>
     <div className="article-body">
       <div className="markdown" dangerouslySetInnerHTML={{ __html: renderPostMarkdown(post.content, post.slug) }} />
       <TableOfContents headings={headings} />
