@@ -499,6 +499,20 @@ em {
     font-size: 16px;
 }
 
+.rss-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.rss-link:hover {
+    color: var(--ink);
+}
+
 .contact-links {
     display: flex;
     gap: 22px;

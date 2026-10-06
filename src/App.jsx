@@ -1,4 +1,4 @@
-import { ArrowUpRight, ChevronLeft, Menu, X } from 'lucide-react'
+import { ArrowUpRight, ChevronLeft, Menu, Rss, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { getPost, posts } from './content/posts'
@@ -37,6 +37,7 @@ function Footer() {
     <div className="footer-meta">
       <p className="eyebrow">Contact</p>
       <ContactLinks />
+      <a className="rss-link" href={`${import.meta.env.BASE_URL}rss.xml`}><Rss size={14} aria-hidden="true" /> RSS feed</a>
       <span>© 2026 LostAquilae / 2026</span>
     </div>
   </footer>
