@@ -103,7 +103,7 @@ function WritingPreview() {
   return <section className="writing-preview section-wrap">
     <div className="section-heading">
       <span className="eyebrow">From the notebook</span>
-      <Link className="text-link" to="/writing/">View all writing <ArrowUpRight size={16} /></Link>
+      <Link className="text-link" to="/writing/">View all writings <ArrowUpRight size={16} /></Link>
     </div>
     <div className="post-list">{posts.slice(1, 4).map((post) => <PostRow key={post.slug} post={post} />)}</div>
   </section>
@@ -118,7 +118,7 @@ function About() {
       <h1>About<br /><em>Me</em><br /></h1>
       <div className="about-copy">
         <p className="lede">I am a cybersecurity researcher, focusing on offensive work</p>
-        <p>I am interested in malware development, reverse engineering, and everything regarding low-level research. This site showcase my work, projects and blog posts</p>
+        <p>I am interested in malware development, reverse engineering, and everything regarding low-level research. This site showcases my work, projects and blog posts.</p>
         <a className="text-link" href="mailto:lostaquilae@protonmail.com">Start a conversation <ArrowUpRight size={16} /></a>
       </div>
     </div>
