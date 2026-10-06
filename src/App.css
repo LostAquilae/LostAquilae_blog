@@ -447,6 +447,11 @@ em {
     text-transform: uppercase;
 }
 
+.article-tags {
+    justify-content: center;
+    margin-top: 24px;
+}
+
 .post-date {
     display: flex;
     gap: 15px;

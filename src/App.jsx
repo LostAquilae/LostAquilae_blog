@@ -202,7 +202,7 @@ function Post() {
 
   return <article className="article section-wrap">
     <Link className="back-link" to="/writing/"><ChevronLeft size={16} /> All writing</Link>
-    <div className="article-header">{post.image && <img className="article-image" src={post.image} alt={post.imageAlt || ''} />}<span className="eyebrow">{post.category} · {post.date}</span><h1>{post.title}</h1><p>{post.excerpt}</p></div>
+    <div className="article-header">{post.image && <img className="article-image" src={post.image} alt={post.imageAlt || ''} />}<span className="eyebrow">{post.category} · {post.date}</span><h1>{post.title}</h1><p>{post.excerpt}</p>{post.tags?.length > 0 && <div className="post-tags article-tags" aria-label="Post tags">{post.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div>}</div>
     <div className="article-body">
       <div className="markdown" dangerouslySetInnerHTML={{ __html: renderPostMarkdown(post.content, post.slug) }} />
       <TableOfContents headings={headings} />

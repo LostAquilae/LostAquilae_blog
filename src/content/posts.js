@@ -15,7 +15,7 @@ export const posts = [
     date: 'September 30, 2026',
     readTime: '4 min read',
     category: 'Shellcode',
-    tags: ['Rust', 'LLVM', 'Shellcode', 'Code generation'],
+    tags: ['Rust', 'LLVM', 'Shellcode', 'CodeGeneration'],
     image: RustyShell_part_3_image,
     imageAlt: 'RustyShell crab with LLVM_IR relative vtable',
     content: RustyShell_part_3,
