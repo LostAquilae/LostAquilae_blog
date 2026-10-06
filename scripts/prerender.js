@@ -21,7 +21,14 @@ try {
     vite.ssrLoadModule('/src/metadata.js'),
   ])
   const template = await readFile(path.join(outputDirectory, 'index.html'), 'utf8')
-  const routes = ['/', '/about', '/writing', '/projects', ...posts.map((post) => `/writing/${post.slug}`)]
+  const manifest = JSON.parse(await readFile(path.join(outputDirectory, '.vite/manifest.json'), 'utf8'))
+  const imageUrls = Object.entries(manifest)
+    .filter(([source]) => source.startsWith('src/content/posts/'))
+    .map(([source, asset]) => [
+      `${vite.config.base}${source}`,
+      `${vite.config.base}${asset.file}`,
+    ])
+  const routes = ['/', '/about/', '/writing/', '/projects/', ...posts.map((post) => `/writing/${post.slug}/`)]
     .map((routePath) => ({ path: routePath, ...getPageMetadata(routePath) }))
   routes.push({ path: '/not-found', outputFile: '404.html', ...getPageMetadata('/not-found') })
 
@@ -32,10 +39,10 @@ try {
         location: `${vite.config.base.replace(/\/$/, '')}${route.path}`,
       }, createElement(AppRoutes)),
     )
-    const html = template
+    const html = imageUrls.reduce((content, [sourceUrl, builtUrl]) => content.replaceAll(sourceUrl, builtUrl), template
       .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>`)
       .replace(/<title>.*?<\/title>/, `<title>${escapeHtml(route.title)}</title>`)
-      .replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${escapeHtml(route.description)}" />`)
+      .replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${escapeHtml(route.description)}" />`))
     const routeDirectory = path.join(outputDirectory, route.path.replace(/^\/|\/$/g, ''))
     const outputPath = route.outputFile
       ? path.join(outputDirectory, route.outputFile)

@@ -21,9 +21,9 @@ function Header() {
     </Link>
     <button className="menu-toggle" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
     <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'}>
-      <NavLink to="/about" onClick={closeMenu}>About me</NavLink>
-      <NavLink to="/writing" onClick={closeMenu}>Blog posts</NavLink>
-      <NavLink to="/projects" onClick={closeMenu}>Projects</NavLink>
+      <NavLink to="/about/" onClick={closeMenu}>About me</NavLink>
+      <NavLink to="/writing/" onClick={closeMenu}>Blog posts</NavLink>
+      <NavLink to="/projects/" onClick={closeMenu}>Projects</NavLink>
       <a href="#contact" onClick={closeMenu}>Contact <ArrowUpRight size={14} /></a>
     </nav>
   </header>
@@ -56,7 +56,7 @@ function Home() {
       <h1>Innovative<br /><em>Offensive Research</em></h1>
       <div className="hero-side">
         <p className="hero-intro">I’m LostAquilae, a cybersecurity researcher, focusing on offensive work.</p>
-        <Link className="text-link" to="/about">Read my profile <ArrowUpRight size={16} /></Link>
+        <Link className="text-link" to="/about/">Read my profile <ArrowUpRight size={16} /></Link>
       </div>
     </div>
   </section>
@@ -73,7 +73,7 @@ function Home() {
             <span className="project-type">{latestPost.category} · {latestPost.date}</span>
             <h2>{latestPost.title}</h2>
             <p>{latestPost.excerpt}</p>
-            <Link className="text-link" to={`/writing/${latestPost.slug}`}>Read latest post <ArrowUpRight size={16} /></Link>
+            <Link className="text-link" to={`/writing/${latestPost.slug}/`}>Read latest post <ArrowUpRight size={16} /></Link>
           </> : <>
             <div className="project-title-block">
               <span className="project-type">{latestPost.category} · {latestPost.date}</span>
@@ -81,7 +81,7 @@ function Home() {
             </div>
             <div className="project-description-block">
               <p>{latestPost.excerpt}</p>
-              <Link className="text-link" to={`/writing/${latestPost.slug}`}>Read latest post <ArrowUpRight size={16} /></Link>
+              <Link className="text-link" to={`/writing/${latestPost.slug}/`}>Read latest post <ArrowUpRight size={16} /></Link>
             </div>
           </>}
         </div>
@@ -93,7 +93,7 @@ function OpenSourcePreview() {
   return <section className="open-source section-wrap">
     <div className="section-heading">
       <span className="eyebrow">Open-source projects</span>
-      <Link className="text-link" to="/projects">View all projects <ArrowUpRight size={16} /></Link>
+      <Link className="text-link" to="/projects/">View all projects <ArrowUpRight size={16} /></Link>
     </div>
     <div className="open-source-grid">{openSourceProjects.slice(0, 3).map((project, index) => <ProjectCard key={`${project.name}-${index}`} project={project} />)}</div>
   </section>
@@ -103,7 +103,7 @@ function WritingPreview() {
   return <section className="writing-preview section-wrap">
     <div className="section-heading">
       <span className="eyebrow">From the notebook</span>
-      <Link className="text-link" to="/writing">View all writing <ArrowUpRight size={16} /></Link>
+      <Link className="text-link" to="/writing/">View all writing <ArrowUpRight size={16} /></Link>
     </div>
     <div className="post-list">{posts.slice(1, 4).map((post) => <PostRow key={post.slug} post={post} />)}</div>
   </section>
@@ -201,18 +201,18 @@ function Post() {
   const nextPost = currentIndex > 0 ? posts[currentIndex - 1] : null
 
   return <article className="article section-wrap">
-    <Link className="back-link" to="/writing"><ChevronLeft size={16} /> All writing</Link>
+    <Link className="back-link" to="/writing/"><ChevronLeft size={16} /> All writing</Link>
     <div className="article-header">{post.image && <img className="article-image" src={post.image} alt={post.imageAlt || ''} />}<span className="eyebrow">{post.category} · {post.date}</span><h1>{post.title}</h1><p>{post.excerpt}</p></div>
     <div className="article-body">
       <div className="markdown" dangerouslySetInnerHTML={{ __html: renderPostMarkdown(post.content, post.slug) }} />
       <TableOfContents headings={headings} />
     </div>
     <nav className={`post-nav ${prevPost ? '' : 'post-nav-single-next'}`} aria-label="More posts">
-      {prevPost && <Link className="post-nav-link post-nav-link-prev" to={`/writing/${prevPost.slug}`}>
+      {prevPost && <Link className="post-nav-link post-nav-link-prev" to={`/writing/${prevPost.slug}/`}>
         <span className="post-nav-label">Previous</span>
         <span className="post-nav-title">{prevPost.title}</span>
       </Link>}
-      {nextPost && <Link className="post-nav-link post-nav-link-next" to={`/writing/${nextPost.slug}`}>
+      {nextPost && <Link className="post-nav-link post-nav-link-next" to={`/writing/${nextPost.slug}/`}>
         <span className="post-nav-label">Next</span>
         <span className="post-nav-title">{nextPost.title}</span>
       </Link>}

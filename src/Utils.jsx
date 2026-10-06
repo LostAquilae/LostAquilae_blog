@@ -44,7 +44,7 @@ export function ProjectCard({ project }) {
 
 // Displays one row of writings
 export function PostRow({ post }) {
-    return <Link className="post-row" to={`/writing/${post.slug}`}>
+    return <Link className="post-row" to={`/writing/${post.slug}/`}>
         <div className="post-main">
             <span className="post-category">{post.category}</span>
             <div className="post-tags">{post.tags?.map((tag) =>

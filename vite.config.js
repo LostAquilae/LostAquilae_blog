@@ -4,5 +4,8 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   base: '/LostAquilae_blog/',
+  build: {
+    manifest: true,
+  },
   plugins: [react()],
 })

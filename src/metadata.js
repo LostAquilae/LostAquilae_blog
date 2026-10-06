@@ -1,35 +1,37 @@
 import { getPost } from './content/posts'
 
 export function getPageMetadata(pathname) {
-  if (pathname === '/') {
+  const normalizedPath = pathname.replace(/\/+$/, '') || '/'
+
+  if (normalizedPath === '/') {
     return {
       title: "LostAquilae's blog",
       description: 'Cybersecurity research, projects, and technical writing by LostAquilae.',
     }
   }
 
-  if (pathname === '/about') {
+  if (normalizedPath === '/about') {
     return {
       title: 'About | LostAquilae',
       description: 'About LostAquilae, a cybersecurity researcher focused on offensive research.',
     }
   }
 
-  if (pathname === '/writing') {
+  if (normalizedPath === '/writing') {
     return {
       title: 'Writing | LostAquilae',
       description: 'Technical write-ups about cybersecurity research and projects.',
     }
   }
 
-  if (pathname === '/projects') {
+  if (normalizedPath === '/projects') {
     return {
       title: 'Projects | LostAquilae',
       description: 'Open-source projects by LostAquilae.',
     }
   }
 
-  const postSlug = pathname.match(/^\/writing\/([^/]+)\/?$/)?.[1]
+  const postSlug = normalizedPath.match(/^\/writing\/([^/]+)$/)?.[1]
   const post = postSlug && getPost(postSlug)
 
   if (post) {
