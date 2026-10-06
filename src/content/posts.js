@@ -18,6 +18,7 @@ export const posts = [
     tags: ['Rust', 'LLVM', 'Shellcode', 'CodeGeneration'],
     image: RustyShell_part_3_image,
     imageAlt: 'RustyShell crab with LLVM_IR relative vtable',
+    imageCaption: 'AI-generated image. Research (code and writing) remains fully man-made',
     content: RustyShell_part_3,
   },
   {
@@ -30,6 +31,7 @@ export const posts = [
     tags: ['Rust', 'Shellcode', 'Syntax'],
     image: RustyShell_part_2_image,
     imageAlt: 'RustyShell crab with syntactic sugar',
+    imageCaption: 'AI-generated image. Research (code and writing) remains fully man-made',
     content: RustyShell_part_2,
   },
   {
@@ -42,6 +44,7 @@ export const posts = [
     tags: ['Rust', 'Shellcode', 'Template'],
     image: RustyShell_part_1_image,
     imageAlt: 'RustyShell crab with Shellcode template',
+    imageCaption: 'AI-generated image. Research (code and writing) remains fully man-made',
     content: RustyShell_part_1,
   },
 ]
