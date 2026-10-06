@@ -105,12 +105,15 @@ button {
 }
 
 .hero {
-    min-height: 650px;
-    padding-top: 116px;
-    padding-bottom: 70px;
+    min-height: 500px;
+    padding-top: 60px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+.hero h1 {
+    font-size: clamp(58px, 7.5vw, 120px);
 }
 
 .hero-kicker,
@@ -131,6 +134,7 @@ button {
     color: var(--muted);
     animation: rise .7s ease both;
     font-size: 13px;
+    padding-bottom: 30px
 }
 
 .status-dot {
@@ -1075,6 +1079,12 @@ em {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px 24px;
     }
+
+    .hero {
+        min-height: 300px;
+        padding-top: 50px;
+        padding-bottom: 10px
+    }
 }
 
 @media (max-width: 900px) {
@@ -1115,19 +1125,36 @@ em {
     }
 
     .hero {
-        min-height: 620px;
-        padding-top: 80px;
+        min-height: 500px;
+        padding-top: 50px;
+        padding-bottom: 70px
+    }
+
+    .hero-kicker {
+        justify-content: center;
+        padding-bottom: 0px;
     }
 
     .hero-main {
         grid-template-columns: 1fr;
-        gap: 38px;
+        gap: 0px;
+        padding-top: 25px;
+    }
+
+    .hero h1 {
+        font-size: clamp(50px, 16vw, 90px);
+        text-align: center;
+    }
+
+    .hero-intro {
+        text-align: center;
     }
 
     .hero-side {
         justify-self: stretch;
         width: auto;
         margin-right: 0;
+        align-items: center;
     }
 
     h1 {
@@ -1142,6 +1169,22 @@ em {
 
     .section-heading {
         margin-bottom: 30px;
+    }
+
+    .feature-band .section-heading {
+        justify-content: flex-start;
+    }
+
+    .feature-band .project-copy {
+        text-align: center;
+    }
+
+    .feature-band .project-copy p {
+        margin-inline: auto;
+    }
+
+    .feature-band .project-copy .text-link {
+        margin-inline: auto;
     }
 
     .project-copy {
