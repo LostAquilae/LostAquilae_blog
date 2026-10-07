@@ -63,7 +63,7 @@ function Home() {
   </section>
     <section className="feature-band section-wrap">
       <div className="section-heading">
-        <span className="eyebrow">Latest Blog</span>
+        <span className="eyebrow">Latest Post</span>
       </div>
       <div className={latestPost.image ? 'project-feature has-image' : 'project-feature no-image'}>
         {latestPost.image && <PostImage post={latestPost} className="project-image" />}
@@ -116,7 +116,7 @@ function About() {
     <div className="about-grid">
       <h1>About<br /><em>Me</em><br /></h1>
       <div className="about-copy">
-        <p className="lede">I am a cybersecurity researcher, focusing on offensive work</p>
+        <p className="lede">I am a cybersecurity researcher, focusing on offensive work.</p>
         <p>I am interested in malware development, reverse engineering, and everything regarding low-level research. This site showcases my work, projects and blog posts.</p>
         <a className="text-link" href="mailto:lostaquilae@protonmail.com">Start a conversation <ArrowUpRight size={16} /></a>
       </div>
@@ -152,7 +152,7 @@ function Writing() {
   return <section className="writing-page section-wrap page-intro">
     <div className="writing-title">
       <h1>Blog<br /><em>Posts</em></h1>
-      <p className="lede">Technical write ups about my research and projects</p>
+      <p className="lede">Technical write-ups about my research and projects.</p>
     </div>
     <div className="post-filter-layout">
       <div className="filter-group">
@@ -179,7 +179,7 @@ function Projects() {
   return <section className="projects-page section-wrap page-intro">
     <div className="writing-title">
       <h1>Open Source<br /><em>Projects</em></h1>
-      <p className="lede">List of all my current and passed projects I have been working on</p>
+      <p className="lede">List of all my current and past projects I have been working on.</p>
     </div>
     <div className="open-source-grid project-archive">{openSourceProjects.map((project) => <ProjectCard key={project.name} project={project} />)}</div>
   </section>

@@ -65,7 +65,7 @@ fn main() {
 }
 ```
 
-Inside the **filters** function, we can simply add the name of the WINAPI we want to use inside our code. This generates two things inside the [winapi_bindings.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/winapi_bindings.rs): The function directly that you can simply use and a function pointer for that exact same function. The small piece of code at the end of the build script is here to remove the function definition, because we don't wan to use that directly, since it will induce imports in the final binary, thus breaking shellcode.
+Inside the **filters** function, we can simply add the name of the WINAPI we want to use inside our code. This generates two things inside the [winapi_bindings.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/winapi_bindings.rs): The function directly that you can simply use and a function pointer for that exact same function. The small piece of code at the end of the build script is here to remove the function definition, because we don't want to use that directly, since it will induce imports in the final binary, thus breaking shellcode.
 
 Here is the generated [winapi_bindings.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/winapi_bindings.rs):
 
@@ -108,7 +108,7 @@ At first, you have to declare and initialize the variable into which you want to
 
 - **The variable that will receive the return value**: Then, you put the variable you initialized earlier, that will receive the return value of the WINAPI call.
 
-- **The arguments of the call**: Lastly, you simply put the argument lists, in the order they are define on the MSDN documentation, just like you would have put them inside a call to the function directly.
+- **The arguments of the call**: Lastly, you simply put the argument lists, in the order they are defined on the MSDN documentation, just like you would have put them inside a call to the function directly.
 
 So this is how you can quickly resolve the module address and function address and call the WINAPI function.
 
@@ -152,7 +152,7 @@ The other two are similar, only the **debug** feature is enabled on **windows_gn
 
 You can find the shellcode entry point in the [shellcode.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/shellcode.rs) file. This example simply showcases what you can do with the template, like using Vec and Strings thanks to the Global Allocator. It also shows how to use macros to call MessageBoxA for the example.
 
-At this point, you have a well designed template that lets you code in Rust as position independent code in a simple and easy way. You can also use a great part of the std, the core and alloc components at least.
+At this point, you have a well-designed template that lets you code in Rust as position-independent code in a simple and easy way. You can also use a great part of the std, the core and alloc components at least.
 
 But one problem remains: Trait object. They are used in some parts of the core and alloc crate, and they break shellcode compatibility, meaning we cannot use every part of these crates. We'll see in the third part of this blog how we can tackle this problem.
 
