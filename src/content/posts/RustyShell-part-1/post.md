@@ -4,7 +4,7 @@ A while back, I wanted to investigate what was possible with the Rust programmin
 
 I just want to be clear that this blog will focus on shellcode for the Windows operating system. Shellcode for other operating systems is out of the scope of this blog.
 
-You can find the code here: [RustyShell](https://github.com/LostAquilae/RustyShell).
+You can find the code here: [RustyShell](https://github.com/LostAquilae/RustyShell). You can also directly import this inside your project thanks to the [rusty_shell](https://crates.io/crates/rusty_shell) crate publish on crates.io.
 
 ## What's a shellcode?
 
@@ -183,7 +183,7 @@ Then, **get_exported_symbol** simply reads through the **export table** of the D
 
 So, when you want to call a function, you first need to retrieve the DLL's address that contains your function, then find the function you're looking for in the export table of this DLL to find its address.
 
-All the code for this can be found here: [runtime_resolve.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/runtime_resolve.rs).
+All the code for this can be found here: [runtime_resolve.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/runtime_resolve.rs).
 
 ### Global Allocator
 
@@ -191,7 +191,7 @@ When I said you couldn't use any code from standard libraries, I lied. In Rust, 
 
 Normally, this should be done with the std crate, but as we can't use it for our use case, we need to redefine it. Since Rust comes with great modularity, we can redefine the global allocator that will be used for every heap-allocated structure inside the alloc crate, and we can make it shellcode compatible. Therefore, we can use things like Vec, String, etc... Inside our position-independent code.
 
-All the code can be found here: [allocator.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/allocator.rs). We simply use the *get_module_address* and *get_exported_symbol* function to dynamically call into **HeapAlloc**, **HeapFree** and **HeapReAlloc**.
+All the code can be found here: [allocator.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/allocator.rs). We simply use the *get_module_address* and *get_exported_symbol* function to dynamically call into **HeapAlloc**, **HeapFree** and **HeapReAlloc**.
 
 ### Compilation flags
 

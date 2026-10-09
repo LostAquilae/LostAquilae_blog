@@ -28,7 +28,7 @@ pub struct LDR_DATA_TABLE_ENTRY {
 
 We see here that, following *FullDllName* is a field named *Reserved4*, and is composed of 8 bytes. But it is commonly known that this field is the *BaseDllName*, which is only the module filename, without the full path. That's why I redefined this structure to replace this *Reserved4* field into *BaseDllName* as a **UNICODE_STRING**, because it is the actual type behind this field.
 
-This allows me to directly access this field in the [runtime_resolve.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/runtime_resolve.rs), without having to do a cast at the moment I retrieve the data behind this field. You can find the redefinitions of this structure in the [peb_types.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/peb_types.rs) module.
+This allows me to directly access this field in the [runtime_resolve.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/runtime_resolve.rs), without having to do a cast at the moment I retrieve the data behind this field. You can find the redefinitions of this structure in the [peb_types.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/peb_types.rs) module.
 
 Apart from that, I can just include every structure I need from this crate directly, which is a great way to get pure Rust definitions of Windows structures.
 
@@ -59,20 +59,32 @@ fn main() {
     //
     // Only the latter is of interest for us, since we are resolving WINAPI calls dynamically at runtime for shellcode purposes.
     // This small code only keep the type definitions and remove the functions
-    let bindings_content = read_to_string("src/winapi_bindings.rs").expect("Error: Couldn't read bindings file");
-    let filtered_bindings = bindings_content.lines().filter(|line| !line.contains('{') && !line.contains('}') && !line.contains("pub fn")).collect::<Vec<&str>>().join("\n");
-    write("src/winapi_bindings.rs", filtered_bindings).expect("Error: Couldn't replace bindings content with filtered one");
+
+    // Reading the generated bindings from file into a String
+    let bindings_content =
+        read_to_string("src/winapi_bindings.rs").expect("Error: Couldn't read bindings file");
+
+    // Applying a regular expression to it to remove the function definitions
+    let regex = Regex::new(r#"unsafe extern "system" \{[^}]*\}"#)
+        .expect("Couldn't construct regex object from regex string");
+    let filtered_bindings = regex.replace_all(&bindings_content, "").to_string();
+
+    // Overwriting the winapi_bindings.rs content with the new filtered one
+    write("src/winapi_bindings.rs", filtered_bindings)
+        .expect("Error: Couldn't replace bindings content with filtered one");
 }
 ```
 
-Inside the **filters** function, we can simply add the name of the WINAPI we want to use inside our code. This generates two things inside the [winapi_bindings.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/winapi_bindings.rs): The function directly that you can simply use and a function pointer for that exact same function. The small piece of code at the end of the build script is here to remove the function definition, because we don't want to use that directly, since it will induce imports in the final binary, thus breaking shellcode.
+Inside the **filters** function, we can simply add the name of the WINAPI we want to use inside our code. This generates two things inside the [winapi_bindings.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/Shellcode_example/src/winapi_bindings.rs): The function directly that you can simply use and a function pointer for that exact same function. The small piece of code at the end of the build script is here to remove the function definition, because we don't want to use that directly, since it will induce imports in the final binary, thus breaking shellcode.
 
-Here is the generated [winapi_bindings.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/winapi_bindings.rs):
+Here is the generated winapi bindings:
 
 ```rust
 pub type LoadLibraryA = unsafe extern "system" fn(lplibfilename: PCSTR) -> HMODULE;
+
 pub type MessageBoxA =
     unsafe extern "system" fn(hwnd: HWND, lptext: PCSTR, lpcaption: PCSTR, utype: u32) -> i32;
+
 pub type HINSTANCE = *mut core::ffi::c_void;
 pub type HMODULE = HINSTANCE;
 pub type HWND = *mut core::ffi::c_void;
@@ -91,11 +103,9 @@ It can be used to automatically resolve the module address and the function addr
 
 ```rust
 // Calling LoadLibraryA to load user32.dll in memory
-let mut user32_address: *mut c_void = null_mut();
-resolve_call_winapi!(
+let user32_address = resolve_call_winapi!(
     kernel32,
     LoadLibraryA,
-    user32_address,
     c"user32.dll".as_ptr().cast()
 );
 ```
@@ -105,8 +115,6 @@ At first, you have to declare and initialize the variable into which you want to
 - **Module Name**: The first argument is the name of the module into which the WINAPI is exported. You have to put the name of the file, without the extension *.dll* which is automatically added inside the macro.
 
 - **The WINAPI name**: The name of the WINAPI you want to use. You need to write it exactly as it is defined inside the *winapi_bindings.rs* module, because this argument will also be used to define the type of the function pointer retrieved.
-
-- **The variable that will receive the return value**: Then, you put the variable you initialized earlier, that will receive the return value of the WINAPI call.
 
 - **The arguments of the call**: Lastly, you simply put the argument lists, in the order they are defined on the MSDN documentation, just like you would have put them inside a call to the function directly.
 
@@ -118,11 +126,9 @@ This one, on the other hand, is useful if you already have a pointer to the righ
 
 ```rust
 // Example calling MessageBoxA
-let mut result_message_box: i32 = 0;
-call_winapi!(
+let result_message_box = call_winapi!(
     user32_address,
     MessageBoxA,
-    result_message_box,
     null_mut(),
     c"Hello World!".as_ptr().cast(),
     c"Example".as_ptr().cast(),
@@ -132,25 +138,39 @@ call_winapi!(
 
 This is exactly like the first macro, except that *user32_address* refers directly to a pointer to user32.dll that has already been resolved.
 
-The code for these macros can be found in the [utils.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/utils.rs) module.
+These macros return a Result with the Ok variant being the return value of the **WINAPI** you called and the Err variant being a RuntimeResolveErrors of the [runtime_resolve.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/runtime_resolve.rs) module.
+
+The code for these macros can be found in the [utils.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/utils.rs) module.
 
 ## Several compilation mode for easy debugging
 
-For this repo, I used the cargo-make project that lets you define several commands to build different binaries for example. I made three different binaries:
+The repo contains three different crates:
 
-- **windows_gnu_shellcode**: This one is a shellcode in release mode, with no debugging features enabled.
+- **rusty_shell**: This is the actual RustyShell crate, containing [allocator.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/allocator.rs) module, the [runtime_resolve.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/runtime_resolve.rs) module and the [utils.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/utils.rs) module, that you can depend on to automatically enable all this to use in your project.
 
-- **windows_gnu_shellcode_debug**: This one is a shellcode target with debugging info.
+- **shellcode_example**: This crate showcases how you can depend on rusty_shell to create your own shellcode crate. It shows you an example of entry point for shellcode and how you can use features of the rusty_shell crate.
 
-- **windows_gnu_debug_no_shellcode**: This one is not even a shellcode and uses debugging information.
+- **no_shellcode_example**: This crate actually depends on the rusty_shell crate but not compiling as shellcode, for debug purposes mainly. It allows you to use the full std, and enables printing with println! inside the [runtime_resolve.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/runtime_resolve.rs) module, since this is the only way to print inside this module.
 
-For the last target, I added another entry file, which doesn't contain the specific entry point inside .text.entry section. It simply uses a main function and can contain std code. It's here only for testing purposes, when you want to easily test a part of the code without being bothered by shellcode complexity.
+The rusty_shell crate comes with two features:
 
-The other two are similar, only the **debug** feature is enabled on **windows_gnu_shellcode_debug**. This feature only have influence on the printf function, available in the [utils.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/utils.rs) module, which is gated behind the debug feature. This function simply loads msvcrt.dll and get the printf pointer inside it to call it directly.
+- **shellcode**: this is basically to gate every std related code behind this feature not being enabled. Again, the println! inside **runtime_resolve.rs** are gated behind it. This is a default feature.
+
+- **debug**: This enables the printf! macro. In **utils.rs**, you can also find a printf! macro, which is gated behind the debug feature. This macro allows you to pass a literal string or a formatted string, thanks to the format! macro, to print something to the console.
+
+I used the cargo make project to compile the different binaries. Here they are:
+
+- **cargo make windows_gnu_shellcode**: Compiles the shellcode_example as shellcode, without **debug** feature enabled.
+
+- **cargo make windows_gnu_shellcode_debug**: Compiles the shellcode_example as shellcode, with **debug** feature enabled, enabling printing through printf! macro.
+
+- **cargo make windows_gnu_debug_no_shellcode**: Compiles the no_shellcode_example crate, allowing you to get prints inside the **runtime_resolve.rs** module.
+
+So as you can see, the repo offers a lot of different way to compile the code, mostly for debug purposes.
 
 ## Conclusion
 
-You can find the shellcode entry point in the [shellcode.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/shellcode.rs) file. This example simply showcases what you can do with the template, like using Vec and Strings thanks to the Global Allocator. It also shows how to use macros to call MessageBoxA for the example.
+You can find the shellcode entry point in the [shellcode.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/Shellcode_example/src/shellcode.rs) file. This example simply showcases what you can do with the template, like using Vec and Strings thanks to the Global Allocator. It also shows how to use macros to call MessageBoxA for the example.
 
 At this point, you have a well-designed template that lets you code in Rust as position-independent code in a simple and easy way. You can also use a great part of the std, the core and alloc components at least.
 

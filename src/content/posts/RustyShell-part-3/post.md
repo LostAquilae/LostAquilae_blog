@@ -339,7 +339,7 @@ To better understand how vtables calls are made, let's first look at a *normal* 
   call fastcc void @_RNvNtCs7UalrjukX49_20RustyShell_shellcode15runtime_resolve18get_module_address(ptr noalias nofree noundef nonnull align 8 captures(none) dereferenceable(24) %_1, ptr noalias nofree noundef nonnull readonly captures(address, read_provenance) @alloc_51761afdde5661790743ff42719270e3.5, i64 noundef 12) #21
 ```
 
-This is a call instruction to call into the get_module_address method of the [runtime_resolve.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/runtime_resolve.rs) module. We can see here that the call operand, i.e. the value that we actually call is a function definition: **@_RNvNtCs7UalrjukX49_20RustyShell_shellcode15runtime_resolve18get_module_address**. We can find this function definition somewhere in the same file:
+This is a call instruction to call into the get_module_address method of the [runtime_resolve.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/RustyShell/src/runtime_resolve.rs) module. We can see here that the call operand, i.e. the value that we actually call is a function definition: **@_RNvNtCs7UalrjukX49_20RustyShell_shellcode15runtime_resolve18get_module_address**. We can find this function definition somewhere in the same file:
 
 ```llvm
 ; RustyShell_shellcode::runtime_resolve::get_module_address
@@ -453,7 +453,7 @@ At first, I thought it wasn't possible to integrate this inside the Rust workflo
 
 - **--emit=llvm-ir**: This flag actually tells the rust compiler to emit LLVM IR files with the **LLVM IR** generated from your code so that you can take a look at it. I couldn't figure out why, but when it is not enabled, it's like my pass doesn't do anything. It runs, I made sure of that, but the modifications done inside it seems to only be in the final binary when this flag is enabled. If anyone wants to look into this topic, I would love to hear what you find out.
 
-And there you have it, the full shellcode template, with the main entry point, [shellcode.rs](https://github.com/LostAquilae/RustyShell/blob/main/src/shellcode.rs), showing an example of **format!** macro usage, which generates **vtables**, but is still shellcode compatible, thanks to the custom **LLVM Pass** that makes them relative.
+And there you have it, the full shellcode template, with the main entry point, [shellcode.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/Shellcode_example/src/shellcode.rs), showing an example of **format!** macro usage, which generates **vtables**, but is still shellcode compatible, thanks to the custom **LLVM Pass** that makes them relative.
 
 ## Conclusion
 
