@@ -4,9 +4,9 @@ The simple fact that you cannot use any standard library already forces you to u
 
 So how do we make this easier?
 
-## Using windows-sys crate for Windows structures
+## Using windows-sys crate for Windows types and structures
 
-We can include the [windows-sys](https://crates.io/crates/windows-sys) crate that already includes a lot of structures definition in pure Rust. This is useful to not having to rewrite every structure definition by hand. It is always possible to rewrite our own implementation of a structure, because sometimes some fields are not quite represented, because Windows consider these fields as private fields that we should not use.
+We can include the [windows-sys](https://crates.io/crates/windows-sys) crate that already includes a lot of types and structures definition in pure Rust. This is useful to not having to rewrite every definition by hand. It is always possible to rewrite our own implementation of a structure, because sometimes some fields are not quite represented, because Windows consider these fields as private fields that we should not use.
 
 Let's take an example, the **LDR_DATA_TABLE_ENTRY**, which is the structure representing a loaded module in the current process, found in the doubly linked list of loaded module inside the **PEB**. The windows-sys crate is implementing this structure like this:
 
@@ -37,21 +37,26 @@ Apart from that, I can just include every structure I need from this crate direc
 The [windows-bindgen](https://crates.io/crates/windows-bindgen) crate allows to automatically generate bindings for Windows structures and functions. The goal here is to automatically retrieve function pointers for the Windows API. We just need to add a [build.rs](https://github.com/LostAquilae/RustyShell/blob/main/build.rs) script:
 
 ```rust
+use regex::Regex;
 use std::fs::{read_to_string, write};
+use std::{env, path::PathBuf};
 
 fn main() {
+    // Only rerun the build script if it has changed
+    println!("cargo:rerun-if-changed=build.rs");
+
+    // Retrieving the OUT_DIR environment variable to get the output dir which we are allowed to use
+    let mut bindings_path = PathBuf::from(env::var("OUT_DIR").expect("Couldn't retrieve OUT_DIR environment variable to put generated bindings inside it"));
+    bindings_path.push("winapi_bindings.rs");
+
     // Using windows bindgen to generate bindings for WINAPI we use
     windows_bindgen::Bindgen::new()
-    .output("src/winapi_bindings.rs")
-    .flat()
-    .sys()
-    .filters([
-        "LoadLibraryA",
-        "MessageBoxA"
-        ]
-    )
-    .extern_fns()
-    .write();
+        .output(&bindings_path)
+        .flat()
+        .sys()
+        .filters(["LoadLibraryA", "MessageBoxA"])
+        .extern_fns()
+        .write();
 
     // The windows bindgen crate generates 2 things for a WINAPI:
     // - The direct function you can call directly into your code
@@ -62,7 +67,7 @@ fn main() {
 
     // Reading the generated bindings from file into a String
     let bindings_content =
-        read_to_string("src/winapi_bindings.rs").expect("Error: Couldn't read bindings file");
+        read_to_string(&bindings_path).expect("Error: Couldn't read bindings file");
 
     // Applying a regular expression to it to remove the function definitions
     let regex = Regex::new(r#"unsafe extern "system" \{[^}]*\}"#)
@@ -70,12 +75,12 @@ fn main() {
     let filtered_bindings = regex.replace_all(&bindings_content, "").to_string();
 
     // Overwriting the winapi_bindings.rs content with the new filtered one
-    write("src/winapi_bindings.rs", filtered_bindings)
+    write(&bindings_path, filtered_bindings)
         .expect("Error: Couldn't replace bindings content with filtered one");
 }
 ```
 
-Inside the **filters** function, we can simply add the name of the WINAPI we want to use inside our code. This generates two things inside the [winapi_bindings.rs](https://github.com/LostAquilae/RustyShell/blob/main/crates/Shellcode_example/src/winapi_bindings.rs): The function directly that you can simply use and a function pointer for that exact same function. The small piece of code at the end of the build script is here to remove the function definition, because we don't want to use that directly, since it will induce imports in the final binary, thus breaking shellcode.
+Inside the **filters** function, we can simply add the name of the WINAPI we want to use inside our code. This generates two things in the generated file: The function directly that you can simply use and a function pointer for that exact same function. The small piece of code at the end of the build script is here to remove the function definition, because we don't want to use that directly, since it will induce imports in the final binary, thus breaking shellcode.
 
 Here is the generated winapi bindings:
 
@@ -92,6 +97,18 @@ pub type PCSTR = *const u8;
 ```
 
 We can see the two function pointers at the start. We can simply use these anywhere we need to cast a function pointer to call the corresponding function. Is also defines the types used inside the function pointer definition.
+
+We just simply need to add this to our entry point, or in any module of the project:
+
+```rust
+mod winapi_bindings {
+    include!(concat!(env!("OUT_DIR"), "/winapi_bindings.rs"));
+}
+```
+
+This macro invocation will expand to copy everything from the winapi_bindings generated by the build script. You can then import function pointers you need from this module directly. Even though the generation will also define types used in the function pointer, if you ever need one of these types, I would advise you to simply import it from the [windows-sys](https://crates.io/crates/windows-sys) crate directly. It will make your code clearer, since the import will be completely written inside the file and not hidden behind the **include!** macro invocation.
+
+If you ever need to inspect the content of this file, note that it is available here: **target/x86_64-pc-windows-gnu/release/build/yourcrate/id/out/winapi_bindings.rs**. Of course, you need to adapt this path if you have a different target or if you are in debug mode.
 
 ## Macros to make dynamically calling WINAPI function easier
 
