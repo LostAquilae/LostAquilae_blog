@@ -7,6 +7,13 @@ export const openSourceProjects = [
     repo: 'https://github.com/LostAquilae/RustyShell',
   },
   {
+    name: 'Post-Quantum Blockchain',
+    description: 'Post-Quantum implementation of the NEAR Protocol',
+    stack: 'Rust · Javascript · Typescript · C',
+    status: 'Archived',
+    repo: 'https://post-quantum-team.github.io/',
+  },
+  {
     name: 'Windows Kernel Rootkit',
     description: 'A Windows rootkit with a kernel component (minifilter) to hide files.',
     stack: 'C# · C/C++',
