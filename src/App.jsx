@@ -117,7 +117,7 @@ function About() {
       <h1>About<br /><em>Me</em><br /></h1>
       <div className="about-copy">
         <p className="lede">I am a cybersecurity researcher, focusing on offensive work.</p>
-        <p>I am interested in malware development, reverse engineering, and everything regarding low-level research. This site showcases my work, projects and blog posts.</p>
+        <p>I am interested in malware development, reverse engineering, and everything regarding low-level research. This site showcases my research, projects, and technical writing.</p>
         <a className="text-link" href="mailto:lostaquilae@protonmail.com">Start a conversation <ArrowUpRight size={16} /></a>
       </div>
     </div>
@@ -234,12 +234,20 @@ function Layout({ children }) { return <><Header /><main>{children}</main><Foote
 
 export function AppRoutes() {
   const { pathname } = useLocation()
-  const { title, description } = getPageMetadata(pathname)
+  const { title, description, canonicalPath } = getPageMetadata(pathname)
 
   useEffect(() => {
     document.title = title
     document.querySelector('meta[name="description"]')?.setAttribute('content', description)
-  }, [title, description])
+    const canonicalLink = document.querySelector('link[rel="canonical"]')
+
+    if (canonicalPath) {
+      const canonicalUrl = new URL(`${import.meta.env.BASE_URL}${canonicalPath.slice(1)}`, window.location.origin)
+      canonicalLink?.setAttribute('href', canonicalUrl.href)
+    } else {
+      canonicalLink?.remove()
+    }
+  }, [title, description, canonicalPath])
 
   return <>
     <ScrollToTop />

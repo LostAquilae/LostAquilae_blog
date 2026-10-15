@@ -94,7 +94,10 @@ ${feedItems}
     const html = imageUrls.reduce((content, [sourceUrl, builtUrl]) => content.replaceAll(sourceUrl, builtUrl), template
       .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>`)
       .replace(/<title>.*?<\/title>/, `<title>${escapeHtml(route.title)}</title>`)
-      .replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${escapeHtml(route.description)}" />`))
+      .replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${escapeHtml(route.description)}" />`)
+      .replace(/<link rel="canonical" href=".*?" \/>/, route.canonicalPath
+        ? `<link rel="canonical" href="${escapeHtml(`${siteUrl}${route.canonicalPath}`)}" />`
+        : ''))
     const routeDirectory = path.join(outputDirectory, route.path.replace(/^\/|\/$/g, ''))
     const outputPath = route.outputFile
       ? path.join(outputDirectory, route.outputFile)
