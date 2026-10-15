@@ -22,6 +22,15 @@ try {
     vite.ssrLoadModule('/src/markdown.js'),
   ])
   const siteUrl = `https://lostaquilae.github.io${vite.config.base.replace(/\/$/, '')}`
+  const sitemapRoutes = ['/', '/about/', '/writing/', '/projects/', ...posts.map((post) => `/writing/${post.slug}/`)]
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapRoutes.map((route) => `  <url><loc>${escapeXml(`${siteUrl}${route}`)}</loc></url>`).join('\n')}
+</urlset>
+`
+  await writeFile(path.join(outputDirectory, 'sitemap.xml'), sitemap)
+  await writeFile(path.join(outputDirectory, 'robots.txt'), `Sitemap: ${siteUrl}/sitemap.xml\n`)
+
   const manifest = JSON.parse(await readFile(path.join(outputDirectory, '.vite/manifest.json'), 'utf8'))
   const imageUrls = Object.entries(manifest)
     .filter(([source]) => source.startsWith('src/content/posts/'))
@@ -71,7 +80,7 @@ ${feedItems}
   await writeFile(path.join(outputDirectory, 'rss.xml'), rssFeed)
 
   const template = await readFile(path.join(outputDirectory, 'index.html'), 'utf8')
-  const routes = ['/', '/about/', '/writing/', '/projects/', ...posts.map((post) => `/writing/${post.slug}/`)]
+  const routes = sitemapRoutes
     .map((routePath) => ({ path: routePath, ...getPageMetadata(routePath) }))
   routes.push({ path: '/not-found', outputFile: '404.html', ...getPageMetadata('/not-found') })
 
