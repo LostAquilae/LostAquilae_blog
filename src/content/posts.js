@@ -7,13 +7,29 @@ import RustyShell_part_2_image from './posts/RustyShell-part-2/images/RustyShell
 import RustyShell_part_3 from './posts/RustyShell-part-3/post.md?raw'
 import RustyShell_part_3_image from './posts/RustyShell-part-3/images/RustyShell_part3_image.png'
 
+import RustyShell_part_4 from './posts/RustyShell-part-4/post.md?raw'
+import RustyShell_part_4_image from './posts/RustyShell-part-4/images/RustyShell_part4_image.png'
+
 export const posts = [
+  {
+    slug: 'RustyShell-part-4',
+    title: 'RustyShell Part 4: Adding compile time string encryption',
+    excerpt: 'Adding compile time string encryption, using the AES algorithm, for obfuscation',
+    date: 'November 03, 2026',
+    readTime: '15 min read',
+    category: 'Shellcode',
+    tags: ['Rust', 'LLVM', 'Shellcode', 'CodeGeneration', 'Obfuscation'],
+    image: RustyShell_part_4_image,
+    imageAlt: 'RustyShell crab with compile time string encryption',
+    imageCaption: 'AI-generated image. Research (code and writing) remains fully human-made.',
+    content: RustyShell_part_4,
+  },
   {
     slug: 'RustyShell-part-3',
     title: 'RustyShell Part 3: Leveraging LLVM IR for relative virtual tables',
     excerpt: 'Using an LLVM Pass to  modify Rust code at the LLVM IR level to make vtables relative and avoid relocations.',
     date: 'September 30, 2026',
-    readTime: '4 min read',
+    readTime: '15 min read',
     category: 'Shellcode',
     tags: ['Rust', 'LLVM', 'Shellcode', 'CodeGeneration'],
     image: RustyShell_part_3_image,
@@ -26,7 +42,7 @@ export const posts = [
     title: 'RustyShell Part 2: The syntactic sugar',
     excerpt: 'Making writing shellcode easier and more fluid.',
     date: 'September 28, 2026',
-    readTime: '3 min read',
+    readTime: '5 min read',
     category: 'Shellcode',
     tags: ['Rust', 'Shellcode', 'Syntax'],
     image: RustyShell_part_2_image,
@@ -39,7 +55,7 @@ export const posts = [
     title: 'RustyShell Part 1: The shellcode template',
     excerpt: 'A basic shellcode template in Rust to compile simply as position-independent code.',
     date: 'September 25, 2026',
-    readTime: '2 min read',
+    readTime: '10 min read',
     category: 'Shellcode',
     tags: ['Rust', 'Shellcode', 'Template'],
     image: RustyShell_part_1_image,
