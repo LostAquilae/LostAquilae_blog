@@ -1,32 +1,34 @@
 import { marked } from 'marked'
 import markedAlert from 'marked-alert'
-import hljs from 'highlight.js/lib/common'
-import llvm from 'highlight.js/lib/languages/llvm'
+import { createHighlighterCore } from 'shiki/core'
+import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
+import c from 'shiki/langs/c.mjs'
+import cpp from 'shiki/langs/cpp.mjs'
+import llvm from 'shiki/langs/llvm.mjs'
+import rust from 'shiki/langs/rust.mjs'
+import darkPlus from 'shiki/themes/dark-plus.mjs'
 
-// Highlighting configuration
-
-// Function to color linker script code blocks
-function linkerScript(hljs) {
-  return {
-    name: 'GNU Linker Script',
-    keywords: { keyword: 'SECTIONS MEMORY PHDRS INCLUDE OUTPUT OUTPUT_FORMAT OUTPUT_ARCH SEARCH_DIR' },
-    contains: [
-      hljs.C_BLOCK_COMMENT_MODE,
-      hljs.C_LINE_COMMENT_MODE,
-      { className: 'function', begin: /\b(?:ENTRY|ALIGN|PROVIDE|KEEP|ASSERT|ORIGIN|LENGTH|ADDR|SIZEOF|LOADADDR)\b(?=\s*\()/ },
-      { className: 'meta', begin: /\/(?:DISCARD|INFO|NOLOAD)\// },
-      { className: 'title', begin: /\.[A-Za-z_][\w.]*/ },
-      { className: 'variable', begin: /__[A-Za-z_]\w*__/ },
-      { className: 'number', begin: /\b(?:0[xX][\da-fA-F]+|\d+)\b/ },
-      { className: 'operator', begin: /[+?:<>|&!-]/ },
-    ],
-  }
+const linkerScriptLanguage = {
+  name: 'ld',
+  scopeName: 'source.ld',
+  patterns: [
+    { name: 'comment.block.ld', begin: '/\\*', end: '\\*/' },
+    { name: 'comment.line.double-slash.ld', match: '//.*$' },
+    { name: 'keyword.control.ld', match: '\\b(?:SECTIONS|MEMORY|PHDRS|INCLUDE|OUTPUT|OUTPUT_FORMAT|OUTPUT_ARCH|SEARCH_DIR)\\b' },
+    { name: 'support.function.ld', match: '\\b(?:ENTRY|ALIGN|PROVIDE|KEEP|ASSERT|ORIGIN|LENGTH|ADDR|SIZEOF|LOADADDR)\\b(?=\\s*\\()' },
+    { name: 'constant.language.ld', match: '/(?:DISCARD|INFO|NOLOAD)/' },
+    { name: 'entity.name.section.ld', match: '\\.[A-Za-z_][\\w.]*' },
+    { name: 'variable.other.ld', match: '__[A-Za-z_]\\w*__' },
+    { name: 'constant.numeric.ld', match: '\\b(?:0[xX][\\da-fA-F]+|\\d+)\\b' },
+    { name: 'keyword.operator.ld', match: '[+?:<>|&!-]' },
+  ],
 }
 
-hljs.registerLanguage('ld', linkerScript)
-
-// Register llvm as highlighting language
-hljs.registerLanguage('llvm', llvm)
+const highlighter = await createHighlighterCore({
+  engine: createJavaScriptRegexEngine(),
+  themes: [darkPlus],
+  langs: [c, cpp, llvm, rust, linkerScriptLanguage],
+})
 
 // Enable github style alerts on Posts
 marked.use(markedAlert())
@@ -40,12 +42,26 @@ function headingId(text) {
   return text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-')
 }
 
+function createHeadingIdGenerator() {
+  const headingCounts = new Map()
+  return (text) => {
+    const baseId = headingId(text)
+    const count = headingCounts.get(baseId) ?? 0
+    headingCounts.set(baseId, count + 1)
+    return count === 0 ? baseId : `${baseId}-${count}`
+  }
+}
+
 export function getPostHeadings(content) {
-  return marked.lexer(content).filter((token) => token.type === 'heading').map((token) => ({
-    id: headingId(token.text),
-    text: token.text,
-    depth: token.depth,
-  }))
+  const getUniqueHeadingId = createHeadingIdGenerator()
+  return marked.lexer(content)
+    .filter((token) => token.type === 'heading')
+    .map((token) => ({
+      id: getUniqueHeadingId(token.text),
+      text: token.text,
+      depth: token.depth,
+    }))
+    .filter((heading) => heading.depth < 4)
 }
 
 function resolvePostImage(postSlug, source) {
@@ -59,21 +75,28 @@ function resolveHtmlImageSources(html, postSlug) {
   return html.replace(/(<img\b[^>]*\bsrc\s*=\s*)(["'])([^"']+)(\2)/gi, (match, prefix, quote, source) => `${prefix}${quote}${resolvePostImage(postSlug, source)}${quote}`)
 }
 
-function escapeHtmlText(value) {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
-
 export function renderPostMarkdown(content, postSlug) {
   const renderer = new marked.Renderer()
   const defaultImageRenderer = renderer.image.bind(renderer)
-  renderer.heading = ({ depth, text }) => `<h${depth} id="${headingId(text)}">${marked.parseInline(text)}</h${depth}>`
+  const getUniqueHeadingId = createHeadingIdGenerator()
+  renderer.heading = ({ depth, text }) => `<h${depth} id="${getUniqueHeadingId(text)}">${marked.parseInline(text)}</h${depth}>`
   renderer.code = ({ text, lang }) => {
     const language = lang?.trim().split(/\s+/)[0].toLowerCase()
-    const highlighted = language && hljs.getLanguage(language)
-      ? hljs.highlight(text, { language }).value
-      : escapeHtmlText(text)
-    const languageClass = language ? ` language-${language.replace(/[^a-z0-9_-]/g, '')}` : ''
-    return `<pre class="code-block"><code class="hljs${languageClass}">${highlighted}</code></pre>`
+    const supportedLanguage = highlighter.getLoadedLanguages().includes(language) ? language : 'text'
+    return highlighter.codeToHtml(text, {
+      lang: supportedLanguage,
+      theme: 'dark-plus',
+      transformers: [
+        {
+          pre(node) {
+            node.properties.class = 'code-block shiki dark-plus'
+          },
+          code(node) {
+            if (language) node.properties.className = [`language-${language.replace(/[^a-z0-9_-]/g, '')}`]
+          },
+        },
+      ],
+    })
   }
   renderer.image = (token) => defaultImageRenderer({ ...token, href: resolvePostImage(postSlug, token.href) })
   renderer.html = ({ text }) => resolveHtmlImageSources(text, postSlug)
