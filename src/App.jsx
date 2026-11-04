@@ -17,7 +17,7 @@ function Header() {
   return <header className="site-header">
     <Link to="/" className="wordmark" onClick={closeMenu}>
       <img className="wordmark-logo" src={`${import.meta.env.BASE_URL}logo.jpg`} alt="LostAquilae logo" />
-      <span>LostAquilae // Offensive Research</span>
+      <span>LostAquilae // Offensive Cybersecurity Research</span>
     </Link>
     <button className="menu-toggle" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">{menuOpen ? <X size={20} /> : <Menu size={20} />}</button>
     <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'}>

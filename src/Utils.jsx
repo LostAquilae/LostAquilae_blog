@@ -1,4 +1,4 @@
-import { ArrowUpRight, Mail } from 'lucide-react'
+import { ArrowDownToLine, ArrowUpRight, Mail } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { contactEmail, socialLinks } from './content/contact'
@@ -24,6 +24,14 @@ export function ContactLinks() {
             {socialLinks.map(({ label, href, icon: Icon }) =>
                 <a className="social-link" href={href} target="_blank" rel="noreferrer" aria-label={label} title={label} key={label}><Icon size={19} />
                 </a>)}
+            <a
+                className="cv-download-link"
+                href={`${import.meta.env.BASE_URL}CV_Maximilien_CHAUX.pdf`}
+                download="CV_Maximilien_CHAUX.pdf"
+            >
+                <ArrowDownToLine size={16} aria-hidden="true" />
+                CV
+            </a>
         </div>
     </div>
 }
